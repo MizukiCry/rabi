@@ -1,4 +1,4 @@
-mod config;
+use rabi::{Config, Editor};
 
 fn main() -> Result<(), String> {
     let mut args = std::env::args();
@@ -15,7 +15,7 @@ fn main() -> Result<(), String> {
         (Some(arg), 0) if arg.starts_with('-') => {
             return Err(String::from("Arguments error. Run rabi --help for usage."))
         }
-        (file_name, 0) => unimplemented!(),
+        (file_name, 0) => Editor::new(Config::load()?)?.run(file_name)?,
         _ => return Err(String::from("Arguments error. Run rabi --help for usage.")),
     }
     Ok(())
