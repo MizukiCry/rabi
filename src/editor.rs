@@ -1,4 +1,4 @@
-use crate::{Config, SyntaxConfig};
+use crate::{Config, Row, SyntaxConfig};
 
 const HELP_MESSAGE: &str = "^S save | ^Q quit | ^F find | ^G go to | ^D duplicate | ^E execute | ^C copy | ^X cut | ^V paste";
 
@@ -40,7 +40,7 @@ struct Cursor {
 impl Cursor {
     fn move_to_next_line(&mut self) {
         self.x = 0;
-        self.y = self.y + 1;
+        self.y += 1;
     }
 }
 
@@ -55,6 +55,7 @@ pub struct Editor {
     mode: Option<Command>,
     left_padding: usize,
     window_width: usize,
+    rows: Vec<Row>,
     dirty: bool,
 
     // Editor size, excluding padding and bar
@@ -65,6 +66,15 @@ pub struct Editor {
 impl Editor {
     pub fn new(config: Config) -> Result<Self, String> {
         todo!()
+    }
+
+    fn current_row(&self) -> Option<&Row> {
+        self.rows.get(self.cursor.y)
+    }
+
+    // Cursor position in rendered characters
+    fn rx(&self) -> usize {
+        self.current_row().map_or(0, |row| row.c2r[self.cursor.x])
     }
 
     pub fn run(&mut self, filename: Option<String>) -> Result<(), String> {

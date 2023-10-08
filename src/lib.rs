@@ -42,7 +42,7 @@ pub mod ctrl_key {
     pub const BACKSPACE: u8 = 127;
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Color {
     Black = 30,
     Red = 31,
@@ -52,6 +52,8 @@ pub enum Color {
     Magenta = 35,
     Cyan = 36,
     White = 37,
+    Default = 39,
+
     BlackBG = 40,
     RedBG = 41,
     GreenBG = 42,
@@ -60,6 +62,7 @@ pub enum Color {
     MagentaBG = 45,
     CyanBG = 46,
     WhiteBG = 47,
+    DefaultBG = 49,
 }
 
 impl Display for Color {

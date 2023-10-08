@@ -55,7 +55,7 @@ impl SyntaxConfig {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Clone, Copy)]
 pub enum HlState {
     #[default]
     Normal,
