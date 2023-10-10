@@ -11,6 +11,8 @@ pub struct Config {
     // The size of tab, default is 4
     pub tab_stop: usize,
 
+    pub quit_times: usize,
+
     // The duration of shown message, in seconds
     pub message_duration: usize,
 
@@ -22,6 +24,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             tab_stop: 4,
+            quit_times: 2,
             message_duration: 3,
             show_line_numbers: true,
         }
@@ -36,6 +39,10 @@ impl Config {
                 "tab_stop" => match parse_value(value)? {
                     0 => return Err("tab_stop must be greater than 0".to_string()),
                     v => config.tab_stop = v,
+                },
+                "quit_times" => match parse_value(value)? {
+                    0 => return Err("quit_times must be greater than 0".to_string()),
+                    v => config.quit_times = v,
                 },
                 "message_duration" => config.message_duration = parse_value(value)?,
                 "show_line_numbers" => config.show_line_numbers = parse_value(value)?,

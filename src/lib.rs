@@ -10,6 +10,15 @@ pub use editor::*;
 pub use row::*;
 pub use syntax::*;
 
+#[cfg(windows)]
+mod windows;
+#[cfg(windows)]
+use windows as sys;
+#[cfg(unix)]
+mod unix;
+#[cfg(unix)]
+use unix as sys;
+
 // ANSI Escape sequences
 pub mod ansi_escape {
     pub const CLEAR_SCREEN: &str = "\x1b[2J"; // Clear from cursor to beginning of the screen
