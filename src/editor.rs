@@ -247,7 +247,7 @@ impl Editor {
 
     fn select_syntax(&mut self, path: &Path) -> Result<(), String> {
         if let Some(ext) = path.extension().and_then(OsStr::to_str) {
-            if let Some(syntax) = SyntaxConfig::from_ext(ext)? {
+            if let Some(syntax) = SyntaxConfig::from_ext(ext, &self.config.config_folder)? {
                 self.syntax = syntax;
             }
         }

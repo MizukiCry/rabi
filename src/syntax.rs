@@ -1,7 +1,4 @@
-use std::{
-    ffi::OsStr,
-    path::{Path, PathBuf},
-};
+use std::{ffi::OsStr, path::Path};
 
 use crate::{parse_ini_file, parse_value, parse_values, Color};
 
@@ -17,10 +14,8 @@ pub struct SyntaxConfig {
 }
 
 impl SyntaxConfig {
-    pub fn from_ext(ext: &str) -> Result<Option<Self>, String> {
-        let dir_entries = PathBuf::from("./config/")
-            .read_dir()
-            .map_err(|e| e.to_string())?;
+    pub fn from_ext(ext: &str, config_folder: &Path) -> Result<Option<Self>, String> {
+        let dir_entries = config_folder.read_dir().map_err(|e| e.to_string())?;
         for dir_entry in dir_entries {
             let dir_entry = dir_entry.map_err(|e| e.to_string())?;
             if dir_entry.path().file_name() == Some(OsStr::new("rabi.ini")) {

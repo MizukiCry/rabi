@@ -4,7 +4,7 @@ A simplified version of [kibi](https://github.com/ilai-deutel/kibi). For practic
 
 ## Configuration
 
-All the configuration files is stored in folder `./config`
+All the configuration files is stored in folder `./config` (In the program folder, so you should put the program in the folder that contains `config` folder, which means you'll get errors if you run `cargo run` directly).
 
 ### `rabi.ini`
 
