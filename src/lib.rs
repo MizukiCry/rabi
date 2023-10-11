@@ -3,7 +3,11 @@ mod editor;
 mod row;
 mod syntax;
 
-use std::fmt::{Display, Formatter};
+use std::{
+    fmt::{Display, Formatter},
+    io::{self, BufRead, Read, Write},
+    str::FromStr,
+};
 
 pub use config::*;
 pub use editor::*;
@@ -18,6 +22,8 @@ use windows as sys;
 mod unix;
 #[cfg(unix)]
 use unix as sys;
+
+pub const HELP_MESSAGE: &str = "^S save | ^Q quit | ^F find | ^G go to | ^D duplicate | ^E execute | ^C copy | ^X cut | ^V paste";
 
 // ANSI Escape sequences
 pub mod ansi_escape {
@@ -78,4 +84,49 @@ impl Display for Color {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "\x1b[{}m", *self as u8)
     }
+}
+
+pub use ansi_escape::*;
+
+fn read_value_until<T: FromStr>(stop_byte: u8) -> Result<T, String> {
+    let mut buf = Vec::new();
+    io::stdin()
+        .lock()
+        .read_until(stop_byte, &mut buf)
+        .map_err(|e| e.to_string())?;
+    buf.pop()
+        .filter(|u| *u == stop_byte)
+        .ok_or("Cursor error.")?;
+    std::str::from_utf8(&buf)
+        .or(Err("Cursor error."))?
+        .parse()
+        .or(Err("Cursor error.".to_string()))
+}
+
+pub fn get_winsize_using_cursor() -> Result<(usize, usize), String> {
+    let mut stdin = io::stdin();
+    print!("{REPOSITION_CURSOR_END}{DEVICE_STATUS_REPORT}");
+    io::stdout().flush().map_err(|e| e.to_string())?;
+    let mut prefix_buffer = [0_u8; 2];
+    stdin
+        .read_exact(&mut prefix_buffer)
+        .map_err(|e| e.to_string())?;
+    if prefix_buffer != [b'\x1b', b'['] {
+        return Err("Cursor error.".to_string());
+    }
+    Ok((read_value_until(b';')?, read_value_until(b'R')?))
+}
+
+pub fn format_size(n: usize) -> String {
+    if n < 1024 {
+        format!("{n}B")
+    } else {
+        let i = ((64 - n.leading_zeros() + 9) / 10 - 1) as usize;
+        let q = 100 * n / (1024 << ((i - 1) * 10));
+        format!("{}.{:02}{}B", q / 100, q % 100, b" kMGTPEZ"[i] as char)
+    }
+}
+
+pub fn slice_find<T: PartialEq>(s: &[T], t: &[T]) -> Option<usize> {
+    (0..(s.len() + 1).saturating_sub(t.len())).find(|&i| s[i..].starts_with(t))
 }

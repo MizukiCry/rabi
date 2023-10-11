@@ -3,8 +3,16 @@ use winapi_util::{console, HandleRef};
 pub type TerminalMode = (u32, u32);
 
 pub fn get_winsize() -> Result<(usize, usize), String> {
-
-    todo!()
+    let rect = console::screen_buffer_info(HandleRef::stdout())
+        .map_err(|e| e.to_string())?
+        .window_rect();
+    match (
+        (rect.bottom - rect.top + 1).try_into(),
+        (rect.right - rect.left + 1).try_into(),
+    ) {
+        (Ok(rows), Ok(cols)) => Ok((rows, cols)),
+        _ => Err("Invalid window size".to_string()),
+    }
 }
 
 pub const fn monitor_winsize() -> Result<(), String> {
@@ -21,6 +29,5 @@ pub fn set_terminal_mode((stdin_mode, stdout_mode): TerminalMode) -> Result<(), 
 }
 
 pub fn enable_raw_mode() -> Result<TerminalMode, String> {
-
     todo!()
 }
