@@ -1,8 +1,11 @@
-use std::path::{Path, PathBuf};
+use std::{
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 
 use crate::{parse_ini_file, parse_value, parse_values, Color};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct SyntaxConfig {
     pub name: String,
     pub highlight_numbers: bool,
@@ -19,8 +22,11 @@ impl SyntaxConfig {
             .read_dir()
             .map_err(|e| e.to_string())?;
         for dir_entry in dir_entries {
-            let (config, extensions) =
-                Self::from_file(&dir_entry.map_err(|e| e.to_string())?.path())?;
+            let dir_entry = dir_entry.map_err(|e| e.to_string())?;
+            if dir_entry.path().file_name() == Some(OsStr::new("rabi.ini")) {
+                continue;
+            }
+            let (config, extensions) = Self::from_file(&dir_entry.path())?;
             if extensions.contains(&ext.to_string()) {
                 return Ok(Some(config));
             }
@@ -36,15 +42,15 @@ impl SyntaxConfig {
                 "name" => config.name = parse_value(value)?,
                 "extensions" => extensions.extend(value.split(',').map(|s| s.trim().to_string())),
                 "highlight_numbers" => config.highlight_numbers = parse_value(value)?,
-                "slcomment_start" => config.slcomment_start = parse_values(value)?,
-                "slstring_quotes" => config.slstring_quotes = parse_values(value)?,
-                "mlcomment_delims" => {
+                "singleline_comment_start" => config.slcomment_start = parse_values(value)?,
+                "singleline_string_quotes" => config.slstring_quotes = parse_values(value)?,
+                "multiline_comment_delims" => {
                     config.mlcomment_delims = match &value.split(',').collect::<Vec<_>>()[..] {
                         [v1, v2] => Some((parse_value(v1)?, parse_value(v2)?)),
                         _ => return Err("mlcomment_delims must have two values".to_string()),
                     }
                 }
-                "mlstring_delims" => config.mlstring_delims = Some(parse_value(value)?),
+                "multiline_string_delim" => config.mlstring_delims = Some(parse_value(value)?),
                 "keywords_1" => config.keywords.push((Color::Yellow, parse_values(value)?)),
                 "keywords_2" => config.keywords.push((Color::Magenta, parse_values(value)?)),
                 _ => return Err(format!("Unknown key: {}", key)),
@@ -55,7 +61,7 @@ impl SyntaxConfig {
     }
 }
 
-#[derive(Default, PartialEq, Clone, Copy)]
+#[derive(Default, PartialEq, Clone, Copy, Debug)]
 pub enum HlState {
     #[default]
     Normal,

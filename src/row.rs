@@ -4,7 +4,7 @@ use unicode_width::UnicodeWidthChar;
 
 use crate::{ansi_escape::*, Color, HlState, SyntaxConfig};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Row {
     pub chars: Vec<u8>,
     render: String,

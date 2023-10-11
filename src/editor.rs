@@ -38,6 +38,7 @@ enum ArrowKey {
     Down,
 }
 
+#[derive(Debug)]
 enum CommandMode {
     Save(String),
     Find(String, Cursor, Option<usize>),
@@ -114,7 +115,6 @@ impl CommandMode {
                         }
                         _ => (),
                     }
-                    todo!()
                 }
             },
             Self::Execute(buffer) => match process_command_key(buffer, key) {
@@ -151,7 +151,7 @@ enum CommandState {
 }
 
 // Cursor position, 0-indexed
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 struct Cursor {
     x: usize,
     y: usize,
@@ -159,7 +159,7 @@ struct Cursor {
     col_offset: usize,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Editor {
     config: Config,
     quit_times: usize,
@@ -210,7 +210,7 @@ impl Editor {
     fn update_winsize(&mut self) -> Result<(), String> {
         let winsize = sys::get_winsize().or_else(|_| get_winsize_using_cursor())?;
         self.text_rows = winsize.0.saturating_sub(2);
-        self.text_cols = winsize.1;
+        self.window_width = winsize.1;
         self.update_padding();
         Ok(())
     }
@@ -438,7 +438,10 @@ impl Editor {
                 self.delete_current_row();
             }
             Key::Char(COPY) => self.copy_current_row(),
-            Key::Char(PASTE) => self.paste_current_row(),
+            Key::Char(PASTE) => {
+                self.paste_current_row();
+                self.set_status("Paste!".to_string());
+            }
             Key::Char(EXECUTE) => command = Some(CommandMode::Execute(String::new())),
             Key::Char(c) => self.insert_byte(c),
         }
@@ -523,11 +526,12 @@ impl Editor {
     }
 
     fn draw_status(&self, buffer: &mut String) -> Result<(), String> {
-        let left = format!(
+        let mut left = format!(
             "{:.30}{}",
             self.file_name.as_deref().unwrap_or("[No Name]"),
             if self.dirty { " (modified)" } else { "" }
         );
+        left.truncate(self.window_width);
         let right = format!(
             "{} | {} | {}:{}",
             self.syntax.name,

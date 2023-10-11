@@ -1,3 +1,4 @@
+use winapi::um::wincon::*;
 use winapi_util::{console, HandleRef};
 
 pub type TerminalMode = (u32, u32);
@@ -29,5 +30,16 @@ pub fn set_terminal_mode((stdin_mode, stdout_mode): TerminalMode) -> Result<(), 
 }
 
 pub fn enable_raw_mode() -> Result<TerminalMode, String> {
-    todo!()
+    let (mode_in0, mode_out0) = (
+        console::mode(HandleRef::stdin()).map_err(|e| e.to_string())?,
+        console::mode(HandleRef::stdout()).map_err(|e| e.to_string())?,
+    );
+
+    let mode_in = (mode_in0 | ENABLE_VIRTUAL_TERMINAL_INPUT)
+        & !(ENABLE_PROCESSED_INPUT | ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+    let mode_out = (mode_out0 | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+        | (DISABLE_NEWLINE_AUTO_RETURN | ENABLE_PROCESSED_OUTPUT);
+
+    set_terminal_mode((mode_in, mode_out))?;
+    Ok((mode_in0, mode_out0))
 }

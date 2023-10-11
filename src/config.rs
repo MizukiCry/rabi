@@ -7,6 +7,7 @@ use std::{
 };
 
 // Configuration for rabi
+#[derive(Debug)]
 pub struct Config {
     // The size of tab, default is 4
     pub tab_stop: usize,

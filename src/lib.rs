@@ -23,7 +23,8 @@ mod unix;
 #[cfg(unix)]
 use unix as sys;
 
-pub const HELP_MESSAGE: &str = "^S save | ^Q quit | ^F find | ^G go to | ^D duplicate | ^E execute | ^C copy | ^X cut | ^V paste";
+// pub const HELP_MESSAGE: &str = "^S save | ^Q quit | ^F find | ^G go to | ^D duplicate | ^E execute | ^C copy | ^X cut | ^V paste";
+pub const HELP_MESSAGE: &str = "^S save | ^Q quit | ^F find | ^G go to | ^D duplicate | ^E execute";
 
 // ANSI Escape sequences
 pub mod ansi_escape {
@@ -57,7 +58,7 @@ pub mod ctrl_key {
     pub const BACKSPACE: u8 = 127;
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Color {
     Black = 30,
     Red = 31,
